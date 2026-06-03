@@ -8,8 +8,10 @@ export default function Modal({
   subtitleChip = false,
   chipVariant = 'emerald',
   icon: Icon,
+  iconClassName = 'bg-blue-500/10 text-[#60a5fa]',
   children,
   size = 'md',
+  closeOnBackdrop = true,
 }) {
   const chipStyles = {
     emerald: 'border-emerald-500/30 bg-emerald-950/80 text-emerald-300/95',
@@ -28,7 +30,7 @@ export default function Modal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8">
       <div
         className="absolute inset-0 bg-black/88 backdrop-blur-sm transition-opacity duration-300 ease-out animate-fade-in"
-        onClick={onClose}
+        onClick={closeOnBackdrop && onClose ? onClose : undefined}
         aria-hidden="true"
       />
       <div
@@ -41,8 +43,10 @@ export default function Modal({
           <div className="flex items-start justify-between gap-4">
             <div className="flex min-w-0 flex-1 items-start gap-4">
               {Icon && (
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-500/10">
-                  <Icon className="h-6 w-6 text-[#60a5fa]" strokeWidth={1.75} />
+                <div
+                  className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${iconClassName}`}
+                >
+                  <Icon className="h-6 w-6" strokeWidth={1.75} />
                 </div>
               )}
               <div className="min-w-0">
@@ -67,7 +71,8 @@ export default function Modal({
             <button
               type="button"
               onClick={onClose}
-              className="shrink-0 rounded-lg p-1.5 text-slate-500 transition-colors duration-150 hover:bg-slate-700/50 hover:text-slate-300"
+              disabled={!onClose}
+              className="shrink-0 rounded-lg p-1.5 text-slate-500 transition-colors duration-150 hover:bg-slate-700/50 hover:text-slate-300 disabled:invisible"
               aria-label="Cerrar"
             >
               <X className="h-5 w-5" />

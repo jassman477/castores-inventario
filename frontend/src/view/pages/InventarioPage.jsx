@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useIsMounted } from '../../utils/useIsMounted';
 import {
   Plus,
   Pencil,
@@ -20,6 +21,7 @@ import Toggle from '../components/Toggle';
 import GhostActionButton from '../components/GhostActionButton';
 import ProductoFormModal from '../components/ProductoFormModal';
 import EntradaStockModal from '../components/EntradaStockModal';
+import ConfirmModal from '../components/ConfirmModal';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { ApiError } from '../../controller/api';
@@ -32,40 +34,52 @@ const formatMoney = (n) =>
 export default function InventarioPage() {
   const { user, isAdmin } = useAuth();
   const toast = useToast();
-  const [productos, setProductos] = useState([]);
+  const isMounted = useIsMounted();
   const [todosProductos, setTodosProductos] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [soloActivos, setSoloActivos] = useState(true);
+  const [incluirInactivos, setIncluirInactivos] = useState(false);
   const [modalProducto, setModalProducto] = useState(false);
   const [modalEntrada, setModalEntrada] = useState(false);
   const [selected, setSelected] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const [modalBaja, setModalBaja] = useState(false);
+  const [productoBaja, setProductoBaja] = useState(null);
+  const [bajaLoading, setBajaLoading] = useState(false);
+  const [modalReactivar, setModalReactivar] = useState(false);
+  const [productoReactivar, setProductoReactivar] = useState(null);
+  const [reactivarLoading, setReactivarLoading] = useState(false);
+
+  const idUsuario = user?.idUsuario;
+  const toastRef = useRef(toast);
+  toastRef.current = toast;
 
   const cargar = useCallback(async () => {
+    if (!idUsuario) return;
     setLoading(true);
     try {
-      if (isAdmin) {
-        const [tabla, todos] = await Promise.all([
-          productoService.listarProductos(user.idUsuario, soloActivos),
-          productoService.listarProductos(user.idUsuario, false),
-        ]);
-        setProductos(tabla);
-        setTodosProductos(todos);
-      } else {
-        const data = await productoService.listarProductos(user.idUsuario, true);
-        setProductos(data);
-        setTodosProductos(data);
-      }
+      const data = await productoService.listarProductos(idUsuario, !isAdmin);
+      if (!isMounted.current) return;
+      setTodosProductos(data);
     } catch (err) {
-      toast.error(err instanceof ApiError ? err.message : 'Error al cargar productos');
+      if (!isMounted.current) return;
+      toastRef.current.error(
+        err instanceof ApiError ? err.message : 'Error al cargar productos'
+      );
     } finally {
-      setLoading(false);
+      if (isMounted.current) setLoading(false);
     }
-  }, [user.idUsuario, isAdmin, soloActivos, toast]);
+  }, [idUsuario, isAdmin, isMounted]);
 
   useEffect(() => {
     cargar();
-  }, [cargar]);
+    // Solo al montar o si cambia el usuario/rol; las mutaciones llaman cargar() explícitamente.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [idUsuario, isAdmin]);
+
+  const productos = useMemo(() => {
+    if (!isAdmin || incluirInactivos) return todosProductos;
+    return todosProductos.filter((p) => p.estatus === 1);
+  }, [todosProductos, incluirInactivos, isAdmin]);
 
   const stats = useMemo(() => {
     const activos = todosProductos.filter((p) => p.estatus === 1);
@@ -121,24 +135,64 @@ export default function InventarioPage() {
     }
   };
 
-  const handleBaja = async (producto) => {
-    if (!window.confirm(`¿Dar de baja "${producto.nombre}"?`)) return;
+  const abrirModalBaja = (producto) => {
+    setProductoBaja(producto);
+    setModalBaja(true);
+  };
+
+  const cerrarModalBaja = () => {
+    if (bajaLoading) return;
+    setModalBaja(false);
+    setProductoBaja(null);
+  };
+
+  const confirmarBaja = async () => {
+    if (!productoBaja?.idProducto || !user?.idUsuario) return;
+    setBajaLoading(true);
     try {
-      await productoService.darDeBajaProducto(producto.idProducto, user.idUsuario);
+      await productoService.darDeBajaProducto(productoBaja.idProducto, user.idUsuario);
+      if (!isMounted.current) return;
       toast.success('Producto dado de baja');
+      setModalBaja(false);
+      setProductoBaja(null);
       cargar();
     } catch (err) {
+      if (!isMounted.current) return;
       toast.error(err instanceof ApiError ? err.message : 'Error al dar de baja');
+    } finally {
+      if (isMounted.current) setBajaLoading(false);
     }
   };
 
-  const handleReactivar = async (producto) => {
+  const abrirModalReactivar = (producto) => {
+    setProductoReactivar(producto);
+    setModalReactivar(true);
+  };
+
+  const cerrarModalReactivar = () => {
+    if (reactivarLoading) return;
+    setModalReactivar(false);
+    setProductoReactivar(null);
+  };
+
+  const confirmarReactivar = async () => {
+    if (!productoReactivar?.idProducto || !user?.idUsuario) return;
+    setReactivarLoading(true);
     try {
-      await productoService.reactivarProducto(producto.idProducto, user.idUsuario);
+      await productoService.reactivarProducto(
+        productoReactivar.idProducto,
+        user.idUsuario
+      );
+      if (!isMounted.current) return;
       toast.success('Producto reactivado');
+      setModalReactivar(false);
+      setProductoReactivar(null);
       cargar();
     } catch (err) {
+      if (!isMounted.current) return;
       toast.error(err instanceof ApiError ? err.message : 'Error al reactivar');
+    } finally {
+      if (isMounted.current) setReactivarLoading(false);
     }
   };
 
@@ -182,8 +236,8 @@ export default function InventarioPage() {
             </button>
             <Toggle
               id="toggle-inactivos"
-              checked={!soloActivos}
-              onChange={(checked) => setSoloActivos(!checked)}
+              checked={incluirInactivos}
+              onChange={setIncluirInactivos}
               label="Incluir inactivos en la tabla"
             />
           </div>
@@ -268,7 +322,7 @@ export default function InventarioPage() {
                                     <GhostActionButton
                                       icon={Ban}
                                       variant="red"
-                                      onClick={() => handleBaja(p)}
+                                      onClick={() => abrirModalBaja(p)}
                                     >
                                       Dar de baja
                                     </GhostActionButton>
@@ -282,7 +336,7 @@ export default function InventarioPage() {
                                   <GhostActionButton
                                     icon={RotateCcw}
                                     variant="green"
-                                    onClick={() => handleReactivar(p)}
+                                    onClick={() => abrirModalReactivar(p)}
                                   >
                                     Reactivar
                                   </GhostActionButton>
@@ -350,6 +404,42 @@ export default function InventarioPage() {
           loading={actionLoading}
         />
       </Modal>
+
+      <ConfirmModal
+        isOpen={modalBaja}
+        onClose={cerrarModalBaja}
+        onConfirm={confirmarBaja}
+        title="Dar de baja producto"
+        message={
+          productoBaja
+            ? `¿Estás seguro que deseas dar de baja ${productoBaja.nombre}? El producto quedará inactivo pero podrá reactivarse.`
+            : ''
+        }
+        confirmLabel="Dar de baja"
+        cancelLabel="Cancelar"
+        loading={bajaLoading}
+        variant="danger"
+        icon={Ban}
+        iconClassName="bg-red-500/10 text-[#f87171]"
+      />
+
+      <ConfirmModal
+        isOpen={modalReactivar}
+        onClose={cerrarModalReactivar}
+        onConfirm={confirmarReactivar}
+        title="Reactivar producto"
+        message={
+          productoReactivar
+            ? `¿Estás seguro que deseas reactivar ${productoReactivar.nombre}? El producto volverá a estar disponible en el inventario.`
+            : ''
+        }
+        confirmLabel="Reactivar"
+        cancelLabel="Cancelar"
+        loading={reactivarLoading}
+        variant="success"
+        icon={RotateCcw}
+        iconClassName="bg-emerald-500/10 text-[#4ade80]"
+      />
     </Layout>
   );
 }

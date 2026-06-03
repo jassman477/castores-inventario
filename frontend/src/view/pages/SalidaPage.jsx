@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useIsMounted } from '../../utils/useIsMounted';
 import { ArrowDownCircle, Hash, AlertCircle, Info, ChevronRight } from 'lucide-react';
 import Layout from '../components/Layout';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -15,6 +16,7 @@ const formatMoney = (n) =>
 export default function SalidaPage() {
   const { user } = useAuth();
   const toast = useToast();
+  const isMounted = useIsMounted();
   const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -23,16 +25,19 @@ export default function SalidaPage() {
   const [errors, setErrors] = useState({});
 
   const cargar = useCallback(async () => {
+    if (!user?.idUsuario) return;
     setLoading(true);
     try {
       const data = await productoService.listarProductos(user.idUsuario, true);
+      if (!isMounted.current) return;
       setProductos(data.filter((p) => p.estatus === 1));
     } catch (err) {
+      if (!isMounted.current) return;
       toast.error(err instanceof ApiError ? err.message : 'Error al cargar productos');
     } finally {
-      setLoading(false);
+      if (isMounted.current) setLoading(false);
     }
-  }, [user.idUsuario, toast]);
+  }, [user?.idUsuario, toast, isMounted]);
 
   useEffect(() => {
     cargar();
