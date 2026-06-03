@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import * as authService from '../services/authService';
-import { isAdministrador, isAlmacenista } from '../constants/roles';
+import * as authService from '../controller/authService';
+import { isAdministrador, isAlmacenista } from '../model/roles';
 import { clearSession, getSession, setSession } from '../utils/session';
 import { useToast } from './ToastContext';
 

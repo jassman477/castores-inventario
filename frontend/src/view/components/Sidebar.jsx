@@ -6,8 +6,8 @@ import {
   ArrowDownCircle,
   Boxes,
 } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
-import { ROLES } from '../constants/roles';
+import { useAuth } from '../../context/AuthContext';
+import { ROLES } from '../../model/roles';
 
 const navClass = ({ isActive }) =>
   `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${

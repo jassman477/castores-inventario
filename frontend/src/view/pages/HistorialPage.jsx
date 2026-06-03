@@ -4,16 +4,11 @@ import Layout from '../components/Layout';
 import LoadingSpinner from '../components/LoadingSpinner';
 import MovimientoBadge from '../components/MovimientoBadge';
 import CustomSelect from '../components/CustomSelect';
-import { useAuth } from '../context/AuthContext';
-import { useToast } from '../context/ToastContext';
-import { ApiError } from '../services/api';
-import * as historicoService from '../services/historicoService';
-
-const FILTRO_OPTIONS = [
-  { value: 'TODOS', label: 'Todos los movimientos' },
-  { value: 'ENTRADA', label: 'Solo entradas' },
-  { value: 'SALIDA', label: 'Solo salidas' },
-];
+import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
+import { ApiError } from '../../controller/api';
+import * as historicoService from '../../controller/historicoService';
+import { FILTRO_HISTORICO_OPTIONS } from '../../model/historico';
 
 const formatFecha = (fecha) => {
   if (!fecha) return '—';
@@ -61,7 +56,7 @@ export default function HistorialPage() {
             id="filtro-historial"
             value={filtro}
             onChange={setFiltro}
-            options={FILTRO_OPTIONS}
+            options={FILTRO_HISTORICO_OPTIONS}
             className="w-full sm:w-56"
           />
         </div>

@@ -20,11 +20,11 @@ import Toggle from '../components/Toggle';
 import GhostActionButton from '../components/GhostActionButton';
 import ProductoFormModal from '../components/ProductoFormModal';
 import EntradaStockModal from '../components/EntradaStockModal';
-import { useAuth } from '../context/AuthContext';
-import { useToast } from '../context/ToastContext';
-import { ApiError } from '../services/api';
-import * as productoService from '../services/productoService';
-import * as inventarioService from '../services/inventarioService';
+import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
+import { ApiError } from '../../controller/api';
+import * as productoService from '../../controller/productoService';
+import * as inventarioService from '../../controller/inventarioService';
 
 const formatMoney = (n) =>
   new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(n);

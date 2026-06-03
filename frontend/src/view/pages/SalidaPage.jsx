@@ -3,11 +3,11 @@ import { ArrowDownCircle, Hash, AlertCircle, Info, ChevronRight } from 'lucide-r
 import Layout from '../components/Layout';
 import LoadingSpinner from '../components/LoadingSpinner';
 import Badge from '../components/Badge';
-import { useAuth } from '../context/AuthContext';
-import { useToast } from '../context/ToastContext';
-import { ApiError } from '../services/api';
-import * as productoService from '../services/productoService';
-import * as inventarioService from '../services/inventarioService';
+import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
+import { ApiError } from '../../controller/api';
+import * as productoService from '../../controller/productoService';
+import * as inventarioService from '../../controller/inventarioService';
 
 const formatMoney = (n) =>
   new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(n);

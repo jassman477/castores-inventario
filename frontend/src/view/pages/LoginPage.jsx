@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { Boxes, Mail, Lock, AlertCircle } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
-import { useToast } from '../context/ToastContext';
-import { ApiError } from '../services/api';
-import { isAuthenticated } from '../utils/session';
+import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
+import { ApiError } from '../../controller/api';
+import { isAuthenticated } from '../../utils/session';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 export default function LoginPage() {

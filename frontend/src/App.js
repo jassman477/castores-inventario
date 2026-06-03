@@ -1,12 +1,12 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { ToastProvider } from './context/ToastContext';
 import { AuthProvider } from './context/AuthContext';
-import ProtectedRoute from './components/ProtectedRoute';
-import LoginPage from './pages/LoginPage';
-import InventarioPage from './pages/InventarioPage';
-import SalidaPage from './pages/SalidaPage';
-import HistorialPage from './pages/HistorialPage';
-import { ROLES } from './constants/roles';
+import ProtectedRoute from './view/components/ProtectedRoute';
+import LoginPage from './view/pages/LoginPage';
+import InventarioPage from './view/pages/InventarioPage';
+import SalidaPage from './view/pages/SalidaPage';
+import HistorialPage from './view/pages/HistorialPage';
+import { ROLES } from './model/roles';
 import { isAuthenticated } from './utils/session';
 
 function App() {
