@@ -1,4 +1,12 @@
-import { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useRef,
+  useState,
+  startTransition,
+} from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as authService from '../controller/authService';
 import { isAdministrador, isAlmacenista } from '../model/roles';
@@ -11,6 +19,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => getSession());
   const navigate = useNavigate();
   const toast = useToast();
+  const isLoggingOutRef = useRef(false);
 
   const login = useCallback(
     async (correo, contrasena) => {
@@ -21,18 +30,24 @@ export const AuthProvider = ({ children }) => {
         nombre: data.nombre,
       };
       setSession(session);
-      setUser(session);
+      startTransition(() => {
+        setUser(session);
+        navigate('/inventario', { replace: true });
+      });
       toast.success(`Bienvenido, ${data.nombre}`);
-
-      navigate('/inventario', { replace: true });
     },
     [navigate, toast]
   );
 
   const logout = useCallback(() => {
+    if (isLoggingOutRef.current) return;
+    isLoggingOutRef.current = true;
     clearSession();
-    setUser(null);
-    navigate('/login', { replace: true });
+    startTransition(() => {
+      navigate('/login', { replace: true });
+      setUser(null);
+      isLoggingOutRef.current = false;
+    });
   }, [navigate]);
 
   const value = useMemo(

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useIsMounted } from '../../utils/useIsMounted';
 import { History } from 'lucide-react';
 import Layout from '../components/Layout';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -21,21 +22,25 @@ const formatFecha = (fecha) => {
 export default function HistorialPage() {
   const { user } = useAuth();
   const toast = useToast();
+  const isMounted = useIsMounted();
   const [movimientos, setMovimientos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filtro, setFiltro] = useState('TODOS');
 
   const cargar = useCallback(async () => {
+    if (!user?.idUsuario) return;
     setLoading(true);
     try {
       const data = await historicoService.listarHistorico(user.idUsuario, filtro);
+      if (!isMounted.current) return;
       setMovimientos(data);
     } catch (err) {
+      if (!isMounted.current) return;
       toast.error(err instanceof ApiError ? err.message : 'Error al cargar historial');
     } finally {
-      setLoading(false);
+      if (isMounted.current) setLoading(false);
     }
-  }, [user.idUsuario, filtro, toast]);
+  }, [user?.idUsuario, filtro, toast, isMounted]);
 
   useEffect(() => {
     cargar();

@@ -19,6 +19,10 @@ const navClass = ({ isActive }) =>
 export default function Sidebar({ mobileOpen, onClose }) {
   const { user, logout, isAdmin } = useAuth();
 
+  const handleLogout = () => {
+    logout();
+  };
+
   const links = [
     { to: '/inventario', label: 'Inventario', icon: Package, roles: [ROLES.ADMINISTRADOR, ROLES.ALMACENISTA] },
     { to: '/salida', label: 'Salida', icon: ArrowDownCircle, roles: [ROLES.ALMACENISTA] },
@@ -65,7 +69,7 @@ export default function Sidebar({ mobileOpen, onClose }) {
               {isAdmin ? 'Administrador' : 'Almacenista'}
             </p>
           </div>
-          <button type="button" onClick={logout} className="btn-secondary w-full">
+          <button type="button" onClick={handleLogout} className="btn-secondary w-full">
             <LogOut className="h-4 w-4" />
             Cerrar sesión
           </button>
