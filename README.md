@@ -22,7 +22,13 @@
 
 ## Pasos para correr la aplicación
 1. Ejecutar `SCRIPTS/inventario-sqlserver.sql` en SQL Server Management Studio
-2. Configurar credenciales en `src/main/resources/application.properties`
+2. Configurar credenciales en `src/main/resources/application.properties`:
+   - `spring.datasource.url` → verificar que el servidor sea el correcto
+   - `spring.datasource.username` → usuario de SQL Server (por defecto: `sa`)
+   - `spring.datasource.password` → contraseña de tu instancia de SQL Server
+
+   > **Nota:** Las credenciales actuales corresponden a una instancia local de prueba. Actualiza estos valores según tu configuración.
+
 3. Correr backend: `.\mvnw.cmd spring-boot:run` (puerto 8080)
 4. Correr frontend: `cd frontend && npm start` (puerto 3000)
 5. Abrir `http://localhost:3000`
